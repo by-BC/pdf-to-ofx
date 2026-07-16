@@ -1,0 +1,195 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+  (function () {
+    var KEY = 'analisegroup-theme';
+    try {
+      var stored = localStorage.getItem(KEY);
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = stored === 'dark' || (stored !== 'light' && prefersDark);
+      if (dark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    } catch (e) { /* localStorage indisponível */ }
+  })();
+  </script>
+  <title>PDF → OFX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+              400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+              800: '#1e40af', 900: '#1e3a8a', 950: '#172554',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="{% static 'converter/css/style.css' %}" />
+</head>
+<body class="antialiased">
+
+  <header class="app-header">
+    <h1>PDF → OFX</h1>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Alternar modo escuro" aria-pressed="false" title="Modo escuro">
+      <svg class="icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+      </svg>
+      <svg class="icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.95l-.71.71M21 12h-1M4 12H3m16.66 7.66l-.71-.71M4.05 4.05l-.71-.71M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+      </svg>
+    </button>
+  </header>
+
+  <main>
+    <section class="page-clientes-panel py-8 antialiased md:py-10 rounded-xl border mx-auto my-8 max-w-screen-xl">
+      <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
+        <div class="ofx-content-shell">
+
+        <!-- Cabeçalho -->
+        <div class="gap-4 sm:flex sm:items-start sm:justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-stone-900 sm:text-2xl">PDF → OFX</h2>
+            <p class="mt-1 text-sm text-stone-500">Converta um extrato bancário em PDF para um arquivo OFX.</p>
+            <p class="mt-1 text-xs text-stone-400">Os dados não são gravados em banco — a conversão fica disponível apenas por alguns minutos para download.</p>
+          </div>
+        </div>
+
+        <!-- 1. Formulário de conversão -->
+        <div class="mt-6">
+          <p class="ofx-section-label">Banco do extrato</p>
+          <div id="pdfofx-banco-group"
+            class="pdfofx-banco-group mt-2 flex flex-wrap gap-x-5 gap-y-2 rounded-lg border border-stone-300 bg-stone-50 px-4 py-3 dark:border-stone-700 dark:bg-stone-800/50">
+            <label class="flex items-center gap-2 text-sm text-stone-700 cursor-pointer dark:text-stone-300">
+              <input type="radio" name="pdfofx-banco" value="bradesco" checked
+                class="h-4 w-4 border-stone-300 text-primary-600 focus:ring-primary-500"> Bradesco
+            </label>
+            <label class="flex items-center gap-2 text-sm text-stone-700 cursor-pointer dark:text-stone-300">
+              <input type="radio" name="pdfofx-banco" value="safra"
+                class="h-4 w-4 border-stone-300 text-primary-600 focus:ring-primary-500"> Banco Safra
+            </label>
+            <label class="flex items-center gap-2 text-sm text-stone-700 cursor-pointer dark:text-stone-300">
+              <input type="radio" name="pdfofx-banco" value="caixa"
+                class="h-4 w-4 border-stone-300 text-primary-600 focus:ring-primary-500"> Caixa Econômica Federal
+            </label>
+            <label class="flex items-center gap-2 text-sm text-stone-700 cursor-pointer dark:text-stone-300">
+              <input type="radio" name="pdfofx-banco" value="bb"
+                class="h-4 w-4 border-stone-300 text-primary-600 focus:ring-primary-500"> Banco do Brasil
+            </label>
+            <label class="flex items-center gap-2 text-sm text-stone-700 cursor-pointer dark:text-stone-300">
+              <input type="radio" name="pdfofx-banco" value="sicredi"
+                class="h-4 w-4 border-stone-300 text-primary-600 focus:ring-primary-500"> Sicredi
+            </label>
+            <label class="flex items-center gap-2 text-sm text-stone-700 cursor-pointer dark:text-stone-300">
+              <input type="radio" name="pdfofx-banco" value="bnb"
+                class="h-4 w-4 border-stone-300 text-primary-600 focus:ring-primary-500"> Banco do Nordeste (BNB)
+            </label>
+          </div>
+
+          <p class="ofx-section-label mt-4">Extrato em PDF</p>
+          <div class="pdfofx-toolbar-row mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <label id="pdfofx-dropzone" for="pdfofx-file-input" tabindex="0" title="Somente arquivos .pdf"
+              class="ofx-toolbar-control pdfofx-dropzone clientes-card flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[#ddd4c4] px-3 text-sm text-stone-500 transition hover:border-primary-400 hover:bg-[#fffdf9] dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800">
+              <svg class="h-4 w-4 shrink-0 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <span id="pdfofx-file-label" class="truncate">Selecione o PDF do extrato</span>
+              <input type="file" id="pdfofx-file-input" accept=".pdf" hidden />
+            </label>
+
+            <button type="button" id="pdfofx-btn-converter"
+              class="ofx-toolbar-control inline-flex items-center justify-center rounded-lg bg-primary-700 px-5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:shrink-0">
+              Converter para OFX
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Estados (info / aviso / progresso) -->
+        <div id="pdfofx-state-card" class="ofx-state-card mt-4 hidden" role="status" hidden></div>
+        <div id="pdfofx-alert" class="mt-4 rounded-lg border px-4 py-3 text-sm whitespace-pre-wrap" role="alert" hidden></div>
+
+        <!-- 3. Prévia -->
+        <div id="pdfofx-preview-section" class="mt-8 hidden" hidden>
+          <div class="gap-4 sm:flex sm:items-start sm:justify-between">
+            <div>
+              <p class="ofx-section-label">Prévia da conversão</p>
+              <p class="mt-1 text-sm text-stone-600" id="pdfofx-conta-info"></p>
+            </div>
+            <div class="mt-3 sm:mt-0">
+              <a id="pdfofx-btn-download" href="#"
+                class="inline-flex items-center rounded-lg bg-primary-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300">
+                Baixar OFX
+              </a>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="clientes-card rounded-lg border p-3 text-center">
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Lançamentos</p>
+              <p class="mt-1 text-lg font-semibold text-stone-800" id="pdfofx-metric-total">0</p>
+            </div>
+            <div class="clientes-card rounded-lg border p-3 text-center">
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Créditos</p>
+              <p class="mt-1 text-lg font-semibold text-green-700" id="pdfofx-metric-creditos">R$ 0,00</p>
+            </div>
+            <div class="clientes-card rounded-lg border p-3 text-center">
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Débitos</p>
+              <p class="mt-1 text-lg font-semibold text-red-700" id="pdfofx-metric-debitos">R$ 0,00</p>
+            </div>
+            <div class="clientes-card rounded-lg border p-3 text-center">
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Saldo líquido</p>
+              <p class="mt-1 text-lg font-semibold text-stone-800" id="pdfofx-metric-saldo">R$ 0,00</p>
+            </div>
+          </div>
+
+          <div class="clientes-card relative mt-4 overflow-hidden rounded-lg border">
+            <div class="overflow-x-auto">
+              <table class="ofx-table w-full text-left text-sm text-stone-600" id="pdfofx-table">
+                <thead class="bg-[#f3ede4] text-xs font-semibold uppercase tracking-wide text-stone-500">
+                  <tr>
+                    <th scope="col" class="pdfofx-col-date whitespace-nowrap px-3 py-3">Data</th>
+                    <th scope="col" class="pdfofx-col-value whitespace-nowrap px-3 py-3 text-end">Valor</th>
+                    <th scope="col" class="px-3 py-3">Descrição</th>
+                  </tr>
+                </thead>
+                <tbody id="pdfofx-table-body" class="divide-y divide-[#ebe3d6]">
+                  <tr class="ofx-table-empty">
+                    <td colspan="3" class="px-4 py-12 text-center text-stone-400">Nenhum lançamento.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p class="mt-2 text-xs text-stone-400">Exibindo os primeiros e últimos lançamentos como amostra. O arquivo OFX baixado contém todas as transações.</p>
+        </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.PDF_OFX_CONFIG = {
+      apiBase: '/api',
+      csrfToken: '{{ csrf_token|escapejs }}',
+    };
+  </script>
+  <script src="{% static 'converter/js/theme.js' %}"></script>
+  <script src="{% static 'converter/js/pdf-to-ofx.js' %}"></script>
+</body>
+</html>
